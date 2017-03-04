@@ -1,0 +1,89 @@
+<div class="col-xs-6 col-md-3">
+	<app-groups (groupSelect)="selectGroup($event)"></app-groups>
+</div>
+<div class="col-xs-12 col-md-9">
+   <div *ngIf="!inventoryGroup">
+     <p>Select group from the list</p>
+   </div>
+   <div *ngIf="inventoryGroup">
+	<h1>Group: {{ inventoryGroup.name }}</h1>
+	<h3>Firewall rules</h3>
+	<table class="table table-striped table-hoover">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>target</th>
+				<th>source interface</th>
+				<th>source address</th>
+				<th>source port</th>
+				<th>dest. interface</th>
+				<th>dest. address</th>
+				<th>dest. port</th>
+				<th>protocol</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tr *ngFor="let rule of firewallRuleset.ruleset; let i=index">
+			<td>{{ i }}</td>
+			<td>{{ rule.target }}</td>
+			<td><span *ngIf="rule.interfaceInNot">! </span>{{ rule.interfaceIn }}</td>
+			<td><span *ngIf="rule.sourceAddressNot">! </span>{{ rule.sourceAddress }}</td>
+			<td><span *ngIf="rule.sourcePortNot">! </span>{{ rule.sourcePort }}</td>
+			<td><span *ngIf="rule.interfaceOutNot">! </span>{{ rule.interfaceOut }}</td>
+			<td><span *ngIf="rule.destinationAddressNot">! </span>{{ rule.destinationAddress }}</td>
+			<td><span *ngIf="rule.destinationPortNot">! </span>{{ rule.destinationPort }}</td>
+			<td><span *ngIf="rule.protocolNot">! </span>{{ rule.protocol }}</td>
+			<td><span class="glyphicon glyphicon-pencil" aria-hidden="true" data-toggle="modal" data-target="#addRuleModal" (click)="updateRule(rule)"></span> <span class="glyphicon glyphicon-remove" aria-hidden="true" (click)="deleteRule(rule)"></span></td>
+		</tr>
+		<tr><td colspan="9"><button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addRuleModal"> Add new rule </button></td></tr>
+	</table>
+   </div>
+</div>
+   <div class="modal fade bs-example-modal-sm" id="addRuleModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+     <div class="modal-dialog modal-sm" role="document">
+       <div class="modal-content">
+         <form>
+         <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           <h4>Define rule</h4>
+         </div>
+         <div class="modal-body">
+           <p>Rule target: 
+             <select id="target" name="target" [(ngModel)]="newRule.target">
+               <option *ngFor="let target of targetList" [value]="target">{{target}}</option>
+             </select>
+           </p>
+           Input interface: 
+             <input type="checkbox" name="interfaceInNot" [(ngModel)]="newRule.interfaceInNot"> not
+             <input type="text" class="form-control" id="interfaceIn" name="interfaceIn" required [(ngModel)]="newRule.interfaceIn">
+           Source address:
+             <input type="checkbox" name="sourceAddressNot" [(ngModel)]="newRule.sourceAddressNot"> not
+             <input type="text" class="form-control" id="sourceAddress" name="sourceAddress" required [(ngModel)]="newRule.sourceAddress">
+           Source port: 
+             <input type="checkbox" name="sourcePortNot" [(ngModel)]="newRule.sourcePortNot"> not
+             <input type="number" class="form-control" id="sourcePort" name="sourcePort" required [(ngModel)]="newRule.sourcePort">
+           Output interface: 
+             <input type="checkbox" name="interfaceOutNot" [(ngModel)]="newRule.interfaceOutNot"> not
+             <input type="text" class="form-control" id="interfaceOut" name="interfaceOut" required [(ngModel)]="newRule.interfaceOut">
+           Destination address: 
+             <input type="checkbox" name="destinationAddressNot" [(ngModel)]="newRule.destinationAddressNot"> not
+             <input type="text" class="form-control" id="destinationAddress" name="destinationAddress" required [(ngModel)]="newRule.destinationAddress">
+           Destination port: 
+             <input type="checkbox" name="destinationPortNot" [(ngModel)]="newRule.destinationPortNot"> not
+             <input type="number" class="form-control" id="destinationPort" name="destinationPort" required [(ngModel)]="newRule.destinationPort">
+           <p>Protocol: 
+             <input type="checkbox" name="protocolNot" [(ngModel)]="newRule.protocolNot"> not
+             <select id="protocol" name="protocol" [(ngModel)]="newRule.protocol">
+               <option *ngFor="let proto of protocolList" [value]="proto">{{proto}}</option>
+             </select>
+           </p>
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="ruleSubmit()">Submit</button>
+           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+         </div>
+         </form>
+       </div>
+     </div>
+   </div>
+

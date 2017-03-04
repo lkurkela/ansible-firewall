@@ -1,0 +1,35 @@
+#jinja2:line_statement_prefix: '%'
+{% from 'macros.j2' import build_rule, build_rule_reply with context -%}
+#!/usr/sbin/nft -f
+# {{ ansible_managed }}
+
+flush ruleset
+
+table filter {
+        chain input {
+                type filter hook input priority 0;
+                iif lo accept
+                ct state established,related counter accept
+                ct state invalid drop
+
+{% if firewall_rules is defined %}
+{% for rule in firewall_rules if (rule.target == "accept" or rule.target == "drop" or rule.target == "reject") %}
+		{{ build_rule('input', rule, 'counter', rule.target ) }}
+{% endfor %}
+{% endif %}
+
+                counter drop
+        }
+
+	chain forward {
+{% if firewall_rules is defined %}
+{% for rule in firewall_rules if (rule.target == "forward") %}
+		{{ build_rule('forward', rule, 'counter', 'accept') }}
+		{{ build_rule_reply('forward', rule, 'counter', 'accept') }}
+{% endfor %}
+{% endif %}
+		counter drop
+	}
+
+}
+

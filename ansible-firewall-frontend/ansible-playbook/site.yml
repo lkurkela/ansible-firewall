@@ -1,0 +1,12 @@
+---
+
+- name: apply to all
+  hosts: all
+  remote_user: root
+
+  roles:
+    - common
+    - { role: router, when: "routingEnabled == true" }
+    - { role: firewall-iptables, when: "firewallType == 'iptables' or firewallType is undefined" }
+    - { role: firewall-nftables, when: "firewallType == 'nftables'" }
+

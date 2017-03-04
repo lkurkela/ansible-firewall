@@ -1,0 +1,26 @@
+---
+
+- name: apply common configuration to all nodes
+  hosts: all
+
+  roles:
+    - common
+
+- name: enable forwarding on routing appliances
+  hosts: firewall, gateway-west, gateway-east
+
+  roles:
+    - router
+ 
+- name: configure and deploy the iptables firewalls
+  hosts: firewall, gateway-west, debian-west
+
+  roles:
+    - firewall-iptables
+
+- name: configure and deploy nftables firewalls
+  hosts: gateway-east, debian-east
+
+  roles:
+    - firewall-nftables
+

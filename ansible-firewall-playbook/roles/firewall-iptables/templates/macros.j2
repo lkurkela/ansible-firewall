@@ -1,0 +1,72 @@
+# This file contains Jinja2 macros which are imported in template.
+# Adopted from Jakub Jirutka's ansible-role-iptables macros.j2
+#  https://github.com/jirutka/ansible-role-iptables/blob/master/templates/macros.j2 
+
+% macro join_params()
+%     for (p, v) in varargs |batch(2)
+%         if v is undefined or v is sameas False
+{{            '' -}}
+%         elif v is sameas True
+{{            "%s "|format(p) -}}
+%         else
+{{            "%s %s "|format(p, v) -}}
+%         endif
+%     endfor
+% endmacro
+
+% macro comment(text)
+%     if text is defined
+{{        '# ' ~ text |wordwrap(wrapstring='\n# ') }}
+%     endif
+% endmacro
+
+% macro build_rule(chain, args)
+{{    comment(args.comment) -}}
+{{    join_params(
+          '-4',   args.ipv4only is defined and iptables_ipv6,
+          '-6',   args.ipv6only is defined and iptables_ipv6,
+          '-A',   chain,
+          '-i',   args.in_iface,
+          '! -i', args.not_in_iface,
+          '-o',   args.out_iface,
+          '! -o', args.not_out_iface,
+          '-s',   args.source,
+          '! -s', args.not_source,
+          '-d',   args.destination,
+          '! -d', args.not_destination,
+          '-p',   args.proto,
+          '! -p', args.not_proto,
+          '--sport', args.sport if args.sport is defined else False,
+          '! --sport', args.not_sport if args.not_sport is defined else False,
+          '--dport', args.dport if args.dport is defined else False,
+          '! --dport', args.not_dport if args.not_dport is defined else False,
+          *varargs)
+-}}
+% endmacro
+
+% macro build_rule_reply(chain, args)
+{{    comment(args.comment) -}}
+{{    join_params(
+          '-4',   args.ipv4only is defined and iptables_ipv6,
+          '-6',   args.ipv6only is defined and iptables_ipv6,
+          '-A',   chain,
+          '-o',   args.in_iface,
+          '! -o', args.not_in_iface,
+          '-i',   args.out_iface,
+          '! -i', args.not_out_iface,
+          '-d',   args.source,
+          '! -d', args.not_source,
+          '-s',   args.destination,
+          '! -s', args.not_destination,
+          '-p',   args.proto,
+          '! -p', args.not_proto,
+          '--sport' , args.dport if args.dport is defined else False,
+          '! --sport', args.not_dport if args.not_dport is defined else False,
+          '--dport', args.sport if args.sport is defined else False,
+          '! --dport', args.not_sport if args.not_sport is defined else False,
+          '-m',   'state',
+          '--state', 'RELATED,ESTABLISHED',
+          *varargs)
+-}}
+% endmacro
+

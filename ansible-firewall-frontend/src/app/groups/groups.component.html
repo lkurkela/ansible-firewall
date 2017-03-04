@@ -1,0 +1,31 @@
+<h3>Groups</h3>
+<table *ngIf="inventoryGroups" class="table table-hover">
+   <thead><tr><th>Group</th><th></th></tr></thead>
+   <template let-group ngFor [ngForOf]="inventoryGroups">
+      <tr><td (click)="onSelect(group)"><span class="glyphicon glyphicon-tasks"></span> {{ group.name }}</td><td (click)="deleteGroup(group)"><span *ngIf="allowEdit" class="glyphicon glyphicon-remove"></span></td></tr>
+      <tr *ngFor="let host of group.hosts"><td><span class="glyphicon glyphicon-hdd inventory-server"></span> {{ host }} </td></tr>
+   </template>
+</table>
+<button *ngIf="allowEdit==true" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addGroupModal"> Add new group </button>
+
+<div class="modal fade bs-example-modal-sm" id="addGroupModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+   <div class="modal-dialog modal-sm" role="document">
+     <div class="modal-content">
+       <form>
+       <div class="modal-header">
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+         <h4>Add new group</h4>
+       </div>
+       <div class="modal-body">
+         <input type="text" class="form-control" id="groupname" name="groupname" required [(ngModel)]="newGroup">
+       </div>
+       <div class="modal-footer">
+         <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="addGroupSubmit()">Submit</button>
+         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+       </div>
+       </form>
+     </div>
+   </div>
+</div>
+
+

@@ -1,0 +1,10 @@
+---
+- name: install iptables-persistent for Debian
+  apt: pkg=iptables-persistent state=present
+  tags: package
+
+- name: configure rules
+  template: src=rules.iptables.j2 dest=/etc/iptables/rules.v4 force=yes
+  notify: reload iptables
+  tags: configuration
+

@@ -1,0 +1,32 @@
+#jinja2:line_statement_prefix: '%'
+{% from 'macros.j2' import build_rule, build_rule_reply with context -%}
+# {{ ansible_managed }}
+
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -m conntrack --ctstate INVALID -j DROP
+{% if firewall_rules is defined %}
+{% for rule in firewall_rules if (rule.target == "accept" or rule.target == "drop" or rule.target == "reject") %}
+{{ build_rule('INPUT', rule, '-j', rule.target|upper ) }}
+{% endfor %}
+{% for rule in firewall_rules if (rule.target == "forward") %}
+{{ build_rule('FORWARD', rule, '-j', 'ACCEPT') }}
+{{ build_rule_reply('FORWARD', rule, '-j', 'ACCEPT') }}
+{% endfor %}
+{% endif %}
+COMMIT
+
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+{% if firewall_rules is defined %}
+{% for rule in firewall_rules if (rule.target == "masquerade") %}
+{{ build_rule('POSTROUTING', rule, '-j', 'MASQUERADE') }}
+{% endfor %}
+{% endif %}
+COMMIT

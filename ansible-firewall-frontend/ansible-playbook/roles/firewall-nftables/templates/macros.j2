@@ -1,0 +1,65 @@
+# This file contains Jinja2 macros which are imported in template.
+# Adopted from Jakub Jirutka's ansible-role-iptables macros.j2
+#  https://github.com/jirutka/ansible-role-iptables/blob/master/templates/macros.j2 
+
+% macro join_params()
+%     for (p, v) in varargs |batch(2)
+%         if v is undefined or v is sameas False
+{{            '' -}}
+%         elif v is sameas True
+{{            "%s "|format(p) -}}
+%         else
+{{            "%s %s "|format(p, v) -}}
+%         endif
+%     endfor
+% endmacro
+
+% macro comment(text)
+%     if text is defined
+{{        '# ' ~ text |wordwrap(wrapstring='\n# ') }}
+%     endif
+% endmacro
+
+% macro build_rule(chain, args)
+{{    comment(args.comment) -}}
+{{    join_params(
+          'iif',   args.in_iface,
+          'iif !=', args.not_in_iface,
+          'oif',   args.out_iface,
+          'oif !=', args.not_out_iface,
+          'ip protocol',   args.proto,
+          'ip protocol !=', args.not_proto,
+          'ip saddr',   args.source,
+          'ip saddr !=', args.not_source,
+          'ip daddr',   args.destination,
+          'ip daddr !=', args.not_destination,
+          '%s sport'|format(args.proto|default('tcp')), args.sport if args.sport is defined else False,
+          '%s sport !='|format(args.proto|default('tcp')), args.not_sport if args.not_sport is defined else False,
+          '%s dport'|format(args.proto|default('tcp')), args.dport if args.dport is defined else False,
+          '%s dport !='|format(args.proto|default('tcp')), args.not_dport if args.not_dport is defined else False,
+          *varargs)
+-}}
+% endmacro
+
+% macro build_rule_reply(chain, args)
+{{    comment(args.comment) -}}
+{{    join_params(
+          'ip protocol',   args.proto,
+          'ip protocol !=', args.not_proto,
+          'oif',   args.in_iface,
+          'oif !=', args.not_in_iface,
+          'iif',   args.out_iface,
+          'iif !=', args.not_out_iface,
+          'daddr',   args.source,
+          'daddr !=', args.not_source,
+          'saddr',   args.destination,
+          'saddr !=', args.not_destination,
+          '%s sport'|format(args.proto|default('tcp')), args.dport if args.dport is defined else False,
+          '%s sport !='|format(args.proto|default('tcp')), args.not_dport if args.not_dport is defined else False,
+          '%s dport'|format(args.proto|default('tcp')), args.sport if args.sport is defined else False,
+          '%s dport !='|format(args.proto|default('tcp')), args.not_sport if args.not_sport is defined else False,
+          'ct state', 'related,established',
+          *varargs)
+-}}
+% endmacro
+

@@ -1,0 +1,18 @@
+---
+- name: check for kernel modules
+  shell: lsmod | grep nf_tables > /dev/null; echo $?
+  changed_when: no
+
+- name: install nftables
+  apt: state=present name=nftables
+  register: nft
+  tags: package
+
+- name: configure rules
+  template: src=nftables.conf.j2 dest=/etc/nftables.conf 
+  notify: reload nftables
+  tags: configuration
+
+- name: start nftables
+  service: name=nftables state=started enabled=yes 
+  ignore_errors: yes
